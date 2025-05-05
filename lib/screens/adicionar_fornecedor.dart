@@ -17,14 +17,12 @@ class _AdicionarFornecedorState extends State<AdicionarFornecedor> {
   final _repo = Repository.instance;
   final _nameCtrl = TextEditingController();
   final _prodCtrl = TextEditingController();
-  final _qtyCtrl = TextEditingController();
   final _descCtrl = TextEditingController();
 
   @override
   void dispose() {
     _nameCtrl.dispose();
     _prodCtrl.dispose();
-    _qtyCtrl.dispose();
     _descCtrl.dispose();
     super.dispose();
   }
@@ -33,15 +31,14 @@ class _AdicionarFornecedorState extends State<AdicionarFornecedor> {
     final nome = _nameCtrl.text.trim();
     if (nome.isEmpty) return;
 
-    final supplier = Fornecedor(
+    final fornecedor = Fornecedor(
       id: null,
       name: nome,
       product: _prodCtrl.text.trim(),
-      quantity: int.tryParse(_qtyCtrl.text.trim()) ?? 0,
       desc: _descCtrl.text.trim(),
     );
 
-    await _repo.addSupplier(supplier);
+    await _repo.addSupplier(fornecedor);
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -52,40 +49,76 @@ class _AdicionarFornecedorState extends State<AdicionarFornecedor> {
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar: AppHeaderBar(onBack: () => Navigator.pop(context)),
-    body: Padding(
-      padding: const EdgeInsets.all(24),
-      child: ListView(
-        children: [
-          Center(
-            child: Text(
-              S.addSupplierTitle,
-              style: const TextStyle(
-                color: AppColors.titleBrown,
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
-              ),
+  Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final width = size.width;
+
+    double contentMaxWidth;
+    double hPadding;
+    double gapFields;
+    if (width <= 600) {
+      // celular
+      contentMaxWidth = double.infinity;
+      hPadding = 24;
+      gapFields = 20;
+    } else if (width <= 960) {
+      // tablet
+      contentMaxWidth = 480;
+      hPadding = 32;
+      gapFields = 24;
+    } else {
+      // desktop
+      contentMaxWidth = 600;
+      hPadding = 40;
+      gapFields = 28;
+    }
+
+    return Scaffold(
+      appBar: AppHeaderBar(onBack: () => Navigator.pop(context)),
+      body: Center(
+        child: SingleChildScrollView(
+          padding: EdgeInsets.symmetric(horizontal: hPadding),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: contentMaxWidth),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const SizedBox(height: 16),
+                Center(
+                  child: Text(
+                    S.addSupplierTitle,
+                    style: const TextStyle(
+                      color: AppColors.titleBrown,
+                      fontSize: 22,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 32),
+
+                AppTextField(controller: _nameCtrl, label: 'nome'),
+                SizedBox(height: gapFields),
+                AppTextField(controller: _prodCtrl, label: 'produto fornecido'),
+                SizedBox(height: gapFields),
+                AppTextField(
+                  controller: _descCtrl,
+                  label: 'descrição',
+                  maxLines: 2,
+                ),
+                SizedBox(height: gapFields + 8),
+
+                Center(
+                  child: SizedBox(
+                    width: 180,
+                    child: PrimaryButton(label: S.confirm, onTap: _save),
+                  ),
+                ),
+                const SizedBox(height: 32),
+              ],
             ),
           ),
-          const SizedBox(height: 32),
-          AppTextField(controller: _nameCtrl, label: 'nome'),
-          AppTextField(controller: _prodCtrl, label: 'produto fornecido'),
-          AppTextField(
-            controller: _qtyCtrl,
-            label: 'quantidade',
-            keyboardType: TextInputType.number,
-          ),
-          AppTextField(controller: _descCtrl, label: 'descrição', maxLines: 2),
-          const SizedBox(height: 32),
-          Center(
-            child: SizedBox(
-              width: 160,
-              child: PrimaryButton(label: S.confirm, onTap: _save),
-            ),
-          ),
-        ],
+        ),
       ),
-    ),
-  );
+    );
+  }
 }

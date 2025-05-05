@@ -23,54 +23,82 @@ class _VisualizacaodeProdutoState extends State<VisualizacaodeProduto> {
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar: AppHeaderBar(onBack: () => Navigator.pop(context)),
-    body: Padding(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        children: [
-          const SizedBox(height: 8),
-          Text(
-            S.viewStockTitle,
-            style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w600,
-              color: AppColors.titleBrown,
+  Widget build(BuildContext context) {
+    final width = MediaQuery.of(context).size.width;
+
+    final double maxPanelWidth =
+        width <= 600
+            ? double
+                .infinity // celular
+            : width <= 960
+            ? 520 // tablet
+            : 720; // desktop
+    final double hPadding = width <= 600 ? 24 : 40;
+
+    return Scaffold(
+      appBar: AppHeaderBar(onBack: () => Navigator.pop(context)),
+      body: Center(
+        child: SingleChildScrollView(
+          padding: EdgeInsets.symmetric(horizontal: hPadding),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: maxPanelWidth),
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                children: [
+                  const SizedBox(height: 8),
+                  Text(
+                    S.viewStockTitle,
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.titleBrown,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  _searchField('Produto', _searchCtrl, _filter),
+                  const SizedBox(height: 24),
+
+                  SizedBox(
+                    height: 460, // garante espaço para o FutureBuilder
+                    child: _buildList(),
+                  ),
+                  const SizedBox(height: 16),
+
+                  SizedBox(
+                    width: 160,
+                    child: PrimaryButton(
+                      label: 'VISTO',
+                      onTap: () => Navigator.pop(context),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
-          const SizedBox(height: 24),
-
-          _searchField('Produto', _searchCtrl, _filter),
-          const SizedBox(height: 24),
-
-          Expanded(child: _buildList()),
-          const SizedBox(height: 16),
-
-          SizedBox(
-            width: 160,
-            child: PrimaryButton(
-              label: 'VISTO',
-              onTap: () => Navigator.pop(context),
-            ),
-          ),
-        ],
+        ),
       ),
-    ),
-  );
+    );
+  }
 
+  // ---------------------------------------------------------------- list
   Widget _buildList() => FutureBuilder<List<Product>>(
     future: _future,
     builder: (ctx, snap) {
-      if (!snap.hasData)
+      if (!snap.hasData) {
         return const Center(child: CircularProgressIndicator());
+      }
       final all = snap.data!;
       final term = _searchCtrl.text.trim().toLowerCase();
       final filtered =
           term.isEmpty
               ? all
               : all.where((p) => p.name.toLowerCase().contains(term)).toList();
-      if (filtered.isEmpty)
+
+      if (filtered.isEmpty) {
         return const Center(child: Text('Nenhuma informação'));
+      }
 
       return ListView.separated(
         itemCount: filtered.length,

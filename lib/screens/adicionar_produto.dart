@@ -55,45 +55,77 @@ class _AddProductScreenState extends State<AdicionarProduto> {
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar: AppHeaderBar(onBack: () => Navigator.pop(context)),
-    body: Padding(
-      padding: const EdgeInsets.all(24),
-      child: ListView(
-        children: [
-          Center(
-            child: Text(
-              S.addProductTitle,
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
-                color: AppColors.titleBrown,
-              ),
+  Widget build(BuildContext context) {
+    final width = MediaQuery.of(context).size.width;
+    final double maxFormWidth =
+        width <= 600
+            ? double.infinity
+            : width <= 960
+            ? 500
+            : 650;
+    final double hPadding = width <= 600 ? 24 : 40;
+    final double gap = width <= 600 ? 20 : 24;
+
+    return Scaffold(
+      appBar: AppHeaderBar(onBack: () => Navigator.pop(context)),
+      body: Center(
+        child: SingleChildScrollView(
+          padding: EdgeInsets.symmetric(horizontal: hPadding),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: maxFormWidth),
+            child: ListView(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              children: [
+                Center(
+                  child: Text(
+                    S.addProductTitle,
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.titleBrown,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 32),
+
+                AppTextField(controller: _prodCtrl, label: 'produto'),
+                SizedBox(height: gap),
+                AppTextField(controller: _catCtrl, label: 'categoria'),
+                SizedBox(height: gap),
+                AppTextField(
+                  controller: _qtyCtrl,
+                  label: 'quantidade',
+                  keyboardType: TextInputType.number,
+                ),
+                SizedBox(height: gap),
+                AppTextField(
+                  controller: _priceCtrl,
+                  label: 'preço',
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                ),
+                SizedBox(height: gap),
+                AppTextField(
+                  controller: _descCtrl,
+                  label: 'descrição',
+                  maxLines: 2,
+                ),
+                const SizedBox(height: 32),
+
+                Center(
+                  child: SizedBox(
+                    width: 180,
+                    child: PrimaryButton(label: S.confirm, onTap: _save),
+                  ),
+                ),
+                const SizedBox(height: 32),
+              ],
             ),
           ),
-          const SizedBox(height: 32),
-          AppTextField(controller: _prodCtrl, label: 'produto'),
-          AppTextField(controller: _catCtrl, label: 'categoria'),
-          AppTextField(
-            controller: _qtyCtrl,
-            label: 'quantidade',
-            keyboardType: TextInputType.number,
-          ),
-          AppTextField(
-            controller: _priceCtrl,
-            label: 'preço',
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          ),
-          AppTextField(controller: _descCtrl, label: 'descrição', maxLines: 2),
-          const SizedBox(height: 32),
-          Center(
-            child: SizedBox(
-              width: 160,
-              child: PrimaryButton(label: S.confirm, onTap: _save),
-            ),
-          ),
-        ],
+        ),
       ),
-    ),
-  );
+    );
+  }
 }
